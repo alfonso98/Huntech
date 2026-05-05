@@ -24,46 +24,72 @@ const fadeObserver = new IntersectionObserver(
 );
 document.querySelectorAll('.fade-in').forEach(el => fadeObserver.observe(el));
 
-// ── COUNTERS ──
-function animCounter(el, target, suffix, dur = 2000) {
-  let start = null;
-  const step = ts => {
-    if (!start) start = ts;
-    const progress = Math.min((ts - start) / dur, 1);
-    const eased = 1 - Math.pow(1 - progress, 3);
-    el.textContent = Math.floor(eased * target) + (suffix || '');
-    if (progress < 1) requestAnimationFrame(step);
-  };
-  requestAnimationFrame(step);
+// ── COUNTERS ── (metrics-grid: m1–m4 | hero-stats: c1–c4)
+// function animCounter(el, target, suffix, dur = 2000) {
+//   let start = null;
+//   const step = ts => {
+//     if (!start) start = ts;
+//     const progress = Math.min((ts - start) / dur, 1);
+//     const eased = 1 - Math.pow(1 - progress, 3);
+//     el.textContent = Math.floor(eased * target) + (suffix || '');
+//     if (progress < 1) requestAnimationFrame(step);
+//   };
+//   requestAnimationFrame(step);
+// }
+//
+// const counterTargets = [
+//   { id: 'm1', v: 120 }, { id: 'm2', v: 85 }, { id: 'm3', v: 8 }, { id: 'm4', v: 40 },
+//   { id: 'c1', v: 120, s: '+' }, { id: 'c2', v: 85, s: '+' }, { id: 'c3', v: 8, s: '+' }, { id: 'c4', v: 40, s: '+' }
+// ];
+// let countersStarted = false;
+// new IntersectionObserver(entries => {
+//   entries.forEach(e => {
+//     if (e.isIntersecting && !countersStarted) {
+//       countersStarted = true;
+//       counterTargets.forEach(t => {
+//         const el = document.getElementById(t.id);
+//         if (el) animCounter(el, t.v, t.s || '');
+//       });
+//     }
+//   });
+// }, { threshold: 0.3 }).observe(document.querySelector('.metrics-grid'));
+
+// ── CONTACT METHOD TOGGLE ──
+const contactValueLabel = document.getElementById('contact-value-label');
+const contactValueInput = document.getElementById('contact-value');
+
+function updateContactField(method) {
+  const isWhatsapp = method === 'whatsapp';
+  const strings = translationCache[localStorage.getItem('lang') || 'es'] || {};
+  const labelKey = isWhatsapp ? 'form.phone.label' : 'form.email.label';
+  const placeholderKey = isWhatsapp ? 'form.phone.placeholder' : 'form.email.placeholder';
+  contactValueLabel.setAttribute('data-i18n', labelKey);
+  contactValueLabel.textContent = strings[labelKey] || (isWhatsapp ? 'Cellphone Number' : 'Email Address');
+  contactValueInput.type = isWhatsapp ? 'tel' : 'email';
+  contactValueInput.setAttribute('data-i18n-placeholder', placeholderKey);
+  contactValueInput.placeholder = strings[placeholderKey] || (isWhatsapp ? '+52 55 1234 5678' : 'john@company.com');
+  contactValueInput.value = '';
 }
 
-const counterTargets = [
-  { id: 'm1', v: 120 }, { id: 'm2', v: 85 }, { id: 'm3', v: 8 }, { id: 'm4', v: 40 },
-  { id: 'c1', v: 120, s: '+' }, { id: 'c2', v: 85, s: '+' }, { id: 'c3', v: 8, s: '+' }, { id: 'c4', v: 40, s: '+' }
-];
-let countersStarted = false;
-new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if (e.isIntersecting && !countersStarted) {
-      countersStarted = true;
-      counterTargets.forEach(t => {
-        const el = document.getElementById(t.id);
-        if (el) animCounter(el, t.v, t.s || '');
-      });
-    }
-  });
-}, { threshold: 0.3 }).observe(document.querySelector('.metrics-grid'));
+document.querySelectorAll('input[name="contact-method"]').forEach(radio => {
+  radio.addEventListener('change', () => updateContactField(radio.value));
+});
 
 // ── CONTACT FORM ──
 document.getElementById('contact-form').addEventListener('submit', e => {
   e.preventDefault();
   const name = document.getElementById('name').value.trim();
-  const email = document.getElementById('email').value.trim();
+  const contactMethod = document.querySelector('input[name="contact-method"]:checked').value;
+  const contactValue = contactValueInput.value.trim();
   const message = document.getElementById('message').value.trim();
-  if (!name || !email || !message) return;
+  if (!name || !contactValue || !message) return;
+  const methodLabel = contactMethod === 'whatsapp' ? 'WhatsApp' : 'Email';
+  const fieldLabel = contactMethod === 'whatsapp' ? 'Phone' : 'Email';
+  alert(`New contact request:\n\nName: ${name}\nPreferred contact: ${methodLabel}\n${fieldLabel}: ${contactValue}`);
   const toast = document.getElementById('toast');
   toast.classList.add('show');
   document.getElementById('contact-form').reset();
+  updateContactField('whatsapp');
   setTimeout(() => toast.classList.remove('show'), 4000);
 });
 
@@ -110,4 +136,4 @@ document.querySelectorAll('.lang-btn').forEach(b => {
   b.addEventListener('click', () => setLanguage(b.dataset.lang));
 });
 
-setLanguage(localStorage.getItem('lang') || 'en');
+setLanguage(localStorage.getItem('lang') || 'es');
