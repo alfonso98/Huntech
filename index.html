@@ -193,7 +193,7 @@
         <div class="svc-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
         <h3 class="svc-title" data-i18n="svc3.title">QA Automation</h3>
         <p class="svc-desc" data-i18n="svc3.desfc">End-to-end test strategies — unit to E2E — integrated into CI/CD pipelines for continuous quality assurance.</p>
-        <div class="svc-tags"><span class="svc-tag">Selenium</span><span class="svc-tag">Playwright</span><span class="svc-tag">Cypress</span><span class="svc-tag">Jest</span></div>
+        <div class="svc-tags"><span class="svc-tag">Selenium</span><span class="svc-tag">TestGen</span><span class="svc-tag">Cypress</span><span class="svc-tag">Postman</span></div>
       </div>
       <div class="service-card fade-in delay-3">
         <div class="svc-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
@@ -372,17 +372,17 @@
           <div class="form-group">
             <label class="form-label" id="contact-value-label" for="contact-value" data-i18n="form.phone.label">Cellphone Number</label>
             <input class="ht-input" type="tel" id="contact-value" placeholder="+52 55 1234 5678" required data-i18n-placeholder="form.phone.placeholder">
+            <span class="field-error" id="contact-value-error" aria-live="polite"></span>
           </div>
           <div class="form-group"><label class="form-label" for="company" data-i18n="form.company.label">Company</label><input class="ht-input" type="text" id="company" placeholder="Acme Corp" data-i18n-placeholder="form.company.placeholder"></div>
           <div class="form-group"><label class="form-label" for="service" data-i18n="form.service.label">Service of Interest</label>
             <select class="ht-input" id="service" style="cursor:pointer">
               <option value="" disabled selected data-i18n="form.service.placeholder">Select a service...</option>
-              <option data-i18n="svc1.title">Software Development</option>
-              <option data-i18n="svc2.title">QA Automation</option>
-              <option data-i18n="svc3.title">Cybersecurity</option>
-              <option data-i18n="svc4.title">Cloud & DevOps</option>
-              <option data-i18n="svc5.title">IT Consulting</option>
-              <option data-i18n="form.service.opt6">Multiple Services</option>
+              <option data-i18n="form.service.opt1" value="IT Consultancy">Consultoria en Tecnología</option>
+              <option data-i18n="form.service.opt2" value="Dev Consultancy">Consultoria en Desarrollo</option>
+              <option data-i18n="form.service.opt3" value="QA Consultancy">Consultoria en Calidad de Software</option>
+              <option data-i18n="form.service.opt4" value="Security Consultancy">Consultoria en Seguridad</option>
+              <option data-i18n="form.service.opt5" value="Multiple">Multiples Servicios</option>
             </select>
           </div>
           <div class="form-group"><label class="form-label" for="message" data-i18n="form.message.label">Message</label><textarea class="ht-textarea" id="message" placeholder="Tell us about your project, timeline and goals..." required data-i18n-placeholder="form.message.placeholder"></textarea></div>

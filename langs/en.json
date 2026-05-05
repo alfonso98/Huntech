@@ -97,6 +97,8 @@
   "form.service.opt6": "Multiple Services",
   "form.message.label": "Message",
   "form.message.placeholder": "Tell us about your project, timeline and goals...",
+  "form.error.phone": "Include country code (e.g. +1 555 123 4567)",
+  "form.error.email": "Enter a valid email address",
   "form.submit": "Send Message",
   "form.disclaimer": "We respond within 24 business hours. Your information is kept strictly confidential.",
   "footer.brand.desc": "Technology consulting and software development. Building the digital systems that power modern business.",

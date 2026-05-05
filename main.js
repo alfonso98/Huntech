@@ -69,23 +69,119 @@ function updateContactField(method) {
   contactValueInput.setAttribute('data-i18n-placeholder', placeholderKey);
   contactValueInput.placeholder = strings[placeholderKey] || (isWhatsapp ? '+52 55 1234 5678' : 'john@company.com');
   contactValueInput.value = '';
+  contactValueInput.classList.remove('invalid');
+  document.getElementById('contact-value-error').textContent = '';
 }
 
 document.querySelectorAll('input[name="contact-method"]').forEach(radio => {
   radio.addEventListener('change', () => updateContactField(radio.value));
 });
 
+// ── CONTACT VALIDATION ──
+function validatePhone(val) {
+  return /^\+\d{7,15}$/.test(val.replace(/\s/g, ''));
+}
+
+function validateEmail(val) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+}
+
+function checkContactValue() {
+  const value = contactValueInput.value.trim();
+  const isWhatsapp = document.querySelector('input[name="contact-method"]:checked')?.value === 'whatsapp';
+  const strings = translationCache[localStorage.getItem('lang') || 'es'] || {};
+  let error = '';
+  if (value) {
+    if (isWhatsapp && !validatePhone(value)) {
+      error = strings['form.error.phone'] || 'Include country code (e.g. +52 55 1234 5678)';
+    } else if (!isWhatsapp && !validateEmail(value)) {
+      error = strings['form.error.email'] || 'Enter a valid email address';
+    }
+  }
+  contactValueInput.classList.toggle('invalid', !!error);
+  document.getElementById('contact-value-error').textContent = error;
+  return !error && value !== '';
+}
+
+contactValueInput.addEventListener('blur', checkContactValue);
+contactValueInput.addEventListener('input', () => {
+  if (contactValueInput.classList.contains('invalid')) checkContactValue();
+});
+
 // ── CONTACT FORM ──
-document.getElementById('contact-form').addEventListener('submit', e => {
+const SUBMIT_COOLDOWN_MS = 3 * 60 * 1000;
+const submitBtn = document.querySelector('#contact-form button[type="submit"]');
+let cooldownTimer = null;
+
+function getRemainingCooldown() {
+  const last = parseInt(localStorage.getItem('lastContactSubmit') || '0', 10);
+  return Math.max(0, SUBMIT_COOLDOWN_MS - (Date.now() - last));
+}
+
+function startCooldownUI() {
+  submitBtn.disabled = true;
+  clearInterval(cooldownTimer);
+  cooldownTimer = setInterval(() => {
+    const left = getRemainingCooldown();
+    const mins = Math.floor(left / 60000);
+    const secs = Math.floor((left % 60000) / 1000);
+    submitBtn.querySelector('span').textContent = `Wait ${mins}:${String(secs).padStart(2, '0')}`;
+    if (left <= 0) {
+      clearInterval(cooldownTimer);
+      submitBtn.disabled = false;
+      submitBtn.querySelector('span').setAttribute('data-i18n', 'form.submit');
+      const lang = localStorage.getItem('lang') || 'es';
+      submitBtn.querySelector('span').textContent = (translationCache[lang] || {})['form.submit'] || 'Send Message';
+    }
+  }, 1000);
+}
+
+function parseContactNumber(number){
+  if(!number.includes('+')) return '+52'+number;
+
+  return number;
+}
+
+// Resume cooldown if page is reloaded mid-cooldown
+const remainingOnLoad = getRemainingCooldown();
+if (remainingOnLoad > 0) startCooldownUI();
+
+document.getElementById('contact-form').addEventListener('submit', async e => {
   e.preventDefault();
+  if (getRemainingCooldown() > 0) return;
+
   const name = document.getElementById('name').value.trim();
   const contactMethod = document.querySelector('input[name="contact-method"]:checked').value;
   const contactValue = contactValueInput.value.trim();
   const message = document.getElementById('message').value.trim();
+  const company = document.getElementById('company').value.trim();
+  const service = document.getElementById('service').value.trim();
+
   if (!name || !contactValue || !message) return;
-  const methodLabel = contactMethod === 'whatsapp' ? 'WhatsApp' : 'Email';
-  const fieldLabel = contactMethod === 'whatsapp' ? 'Phone' : 'Email';
-  alert(`New contact request:\n\nName: ${name}\nPreferred contact: ${methodLabel}\n${fieldLabel}: ${contactValue}`);
+  if (!checkContactValue()) return;
+  const isWhatsapp = contactMethod === 'whatsapp';
+
+  const payload = {
+    lead_name: name,
+    lead_preferred_medium: isWhatsapp ? 'WhatsApp' : 'Email',
+    lead_email: isWhatsapp ? '' : contactValue,
+    lead_celphone_number: isWhatsapp ? parseContactNumber(contactValue) : '',
+    lead_company: company,
+    lead_needed_service: service,
+    lead_message: message,
+  };
+
+  try {
+    await fetch('https://hook.us2.make.com/fna5ckvp2rap81sqn7iyytzjk3sk4ytx', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+  } catch (_) { /* silently continue — webhook errors shouldn't block UX */ }
+
+  localStorage.setItem('lastContactSubmit', Date.now().toString());
+  startCooldownUI();
+
   const toast = document.getElementById('toast');
   toast.classList.add('show');
   document.getElementById('contact-form').reset();
