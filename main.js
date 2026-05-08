@@ -194,7 +194,7 @@ const translationCache = {};
 
 async function loadTranslations(lang) {
   if (translationCache[lang]) return translationCache[lang];
-  const res = await fetch(`./langs/${lang}.json`);
+  const res = await fetch(`./i18n/${lang}.json`);
   translationCache[lang] = await res.json();
   return translationCache[lang];
 }
